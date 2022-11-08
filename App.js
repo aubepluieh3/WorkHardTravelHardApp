@@ -19,12 +19,18 @@ export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+  const [editText, setEditText] = useState("");
+
   useEffect(() => {
     loadToDos();
   }, []);
+
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   const onChangeText = (payload) => setText(payload);
+  const onChangeEditText = (e) => {
+    setEditText(e);
+  };
 
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
@@ -43,6 +49,16 @@ export default function App() {
     await saveToDos(newToDos);
     setText("");
   };
+  const updateToDo = (key) => {
+    onPress: () => {
+      const newToDos = { ...toDos };
+      newToDos[key].text = newText;
+      setToDos(newToDos);
+      saveToDos(newToDos);
+      setText("");
+    };
+  };
+
   const deleteToDo = (key) => {
     Alert.alert("Delete To Do", "Are you sure?", [
       { text: "Cancel" },
@@ -58,6 +74,20 @@ export default function App() {
       },
     ]);
   };
+
+  const editToDo = async (key) => {
+    if (editText.length === 0) {
+      return;
+    }
+    const newToDos = [...toDos];
+
+    const updateToDo = { ...toDos[key], text: editText };
+    newToDos.splice(key, 1, updateToDo);
+
+    setToDos(newToDos);
+    await saveToDos(newToDos);
+  };
+  const [editMode, setEditMode] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -98,7 +128,7 @@ export default function App() {
             <View style={styles.toDo} key={key}>
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
               <TouchableOpacity onPress={() => deleteToDo(key)}>
-                <Fontisto name="trash" size={18} color={theme.grey} />
+                <Fontisto name="trash" size={18} color="white" />
               </TouchableOpacity>
             </View>
           ) : null
